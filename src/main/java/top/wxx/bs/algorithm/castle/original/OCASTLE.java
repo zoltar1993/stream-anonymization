@@ -192,8 +192,15 @@ public class OCASTLE {
         }    
     };
     }//Constructor ends here...
-    
-    
+
+
+    public void startAll(){
+        Read.start();
+        Anonymize.start();
+        // CheckKC.start();
+    }
+
+
     /**
      * Find best Cluster for tuple T which has less Information loss that Tau
      * @param T Tuple
