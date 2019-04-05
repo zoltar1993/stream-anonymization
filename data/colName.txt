@@ -1,0 +1,11 @@
+pid
+receiveOrder Id;
+age 
+fhlweight
+education-num
+hour-per-week
+workclass
+education
+marital-status
+race;
+gender
