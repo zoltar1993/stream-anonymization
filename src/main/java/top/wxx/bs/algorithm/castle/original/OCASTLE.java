@@ -200,6 +200,10 @@ public class OCASTLE {
         // CheckKC.start();
     }
 
+    public void setDataAccessor(DataAccessor dataAccessor){
+        this.dataAccessor = dataAccessor;
+    }
+
 
     /**
      * Find best Cluster for tuple T which has less Information loss that Tau

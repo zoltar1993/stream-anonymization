@@ -1,5 +1,6 @@
 package top.wxx.bs;
 
+import top.wxx.bs.algorithm.castle.original.FileDataAccessor;
 import top.wxx.bs.algorithm.castle.original.OCASTLE;
 
 /**
@@ -15,6 +16,10 @@ public class CastleRunner {
         int B = 6;
 
         OCASTLE ocastle = new OCASTLE(N, K, D, B);
+
+        // 设置使用文件读数据，默认从数据库读
+        ocastle.setDataAccessor( new FileDataAccessor() );
+
         ocastle.startAll();
     }
 
