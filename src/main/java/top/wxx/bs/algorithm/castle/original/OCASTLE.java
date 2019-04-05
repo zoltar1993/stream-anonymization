@@ -11,9 +11,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.Vector;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,8 +38,6 @@ public class OCASTLE {
     Thread Anonymize;
     Thread CheckKC;
     
-    //Connection 
-    Connection con;
     // trees and ranges
     AdultRange Ranges;
     AdultTree Trees;
@@ -56,7 +52,8 @@ public class OCASTLE {
     Vector<AnonymizationOutput> Output;
     
     long startTime;
- 
+
+    DataAccessor dataAccessor = null;
 
     
     /**
@@ -75,9 +72,51 @@ public class OCASTLE {
     this.Beta=B;
     // TAU
     this.Tau = 0.0;
-    
-    //Connect DB
-    ConnectDB();
+
+
+    dataAccessor = new DataAccessor() {
+        @Override
+        public List<Tuple> getAllTuple(int n){
+            List<Tuple> res = new LinkedList<>();
+
+
+            //Connection
+            Connection con = null;
+            try{
+                Class.forName("com.mysql.jdbc.Driver");
+                con = null;
+                con = DriverManager.getConnection("jdbc:mysql://localhost/Adult","root", "");
+                System.out.print("Database is connected !");
+            } catch(ClassNotFoundException | SQLException e) {
+                System.out.print("Do not connect to DB - Error:"+e);
+                throw new RuntimeException("some error occur : ", e);
+            }
+            try{
+                String query = "select * from dataset limit " + n + ";";
+                Statement statement = con.createStatement();
+                ResultSet rs = statement.executeQuery(query);
+                System.out.println(NTuples + " data loaded from database");
+                while( rs.next() ){
+                    int age = rs.getInt(2);
+                    int fhlweight = rs.getInt(3);
+                    int education_num = rs.getInt(4);
+                    int hours_per_week = rs.getInt(5);
+                    String work_class = rs.getString(6);
+                    String education = rs.getString(7);
+                    String marital_status = rs.getString(8);
+                    String race = rs.getString(9);
+                    String gender = rs.getString(10);
+                    Tuple t = new Tuple(RTuples, RTuples, age, fhlweight, education_num, hours_per_week, work_class, education, marital_status, race, gender);
+                    res.add(t);
+                }
+            } catch( Exception e ){
+                throw new RuntimeException("some error occur : ", e);
+            }
+
+            return res;
+        }
+    };
+
     //Buffer
     Buffer=new Vector<Tuple>();
     
@@ -99,39 +138,25 @@ public class OCASTLE {
     Read= new Thread(){
         @Override
         public void run() {
-            String query= "select * from dataset limit "+NTuples+";";
-        try {
-            RTuples=0;
-            Statement statement= con.createStatement();
-            ResultSet rs= statement.executeQuery(query);
-            System.out.println(NTuples+" data loaded from database");
-            while(rs.next()){
-                
-                int age=rs.getInt(2);
-                int fhlweight=rs.getInt(3);
-                int education_num=rs.getInt(4);
-                int hours_per_week=rs.getInt(5);
-                // englarge Ranges;
-                Ranges.ageRange.enlargeRange(age);
-                Ranges.fhlweightRange.enlargeRange(fhlweight);
-                Ranges.edu_numRange.enlargeRange(education_num);
-                Ranges.hours_weekRange.enlargeRange(hours_per_week);
-                
-                String work_class= rs.getString(6);
-                String education= rs.getString(7);
-                String marital_status= rs.getString(8);
-                String race= rs.getString(9);
-                String gender= rs.getString(10);
-                Tuple t=new Tuple(RTuples,RTuples,age,fhlweight,education_num,hours_per_week,work_class,education,marital_status,race,gender);
-                Buffer.add(t);
-                sleep(5);
-                RTuples++;
-                System.out.println(t.toString());
+            try {
+                RTuples=0;
+                List<Tuple> tuples = dataAccessor.getAllTuple(NTuples);
+                for(Tuple tuple : tuples){
+                    // englarge Ranges;
+                    Ranges.ageRange.enlargeRange(tuple.age);
+                    Ranges.fhlweightRange.enlargeRange(tuple.fhlweight);
+                    Ranges.edu_numRange.enlargeRange(tuple.education_num);
+                    Ranges.hours_weekRange.enlargeRange(tuple.hour_per_week);
+
+                    Buffer.add(tuple);
+                    sleep(5);
+                    RTuples++;
+                    System.out.println(tuple.toString());
+                }
+
+            } catch (Exception ex) {
+                Logger.getLogger(OFADS.class.getName()).log(Level.SEVERE, null, ex);
             }
-          
-        } catch (Exception ex) {
-            Logger.getLogger(OFADS.class.getName()).log(Level.SEVERE, null, ex);
-        }  
             System.out.println("reading fnished reading fnished reading fnished reading fnishedreading fnishedreading fnishedreading fnishedreading fnished");
         }       
     };// read phase
@@ -169,25 +194,6 @@ public class OCASTLE {
     }//Constructor ends here...
     
     
-    
-      /**
-     * Connect DB with XAMPP server Configuration
-     */
-    private void ConnectDB(){
-        try
-            {
-            Class.forName("com.mysql.jdbc.Driver");
-            con = null;
-            con = DriverManager.getConnection("jdbc:mysql://localhost/Adult","root", "");
-            System.out.print("Database is connected !");
-            }
-            catch(ClassNotFoundException | SQLException e)
-            {
-            System.out.print("Do not connect to DB - Error:"+e);
-            }
-    } 
-     
-   
     /**
      * Find best Cluster for tuple T which has less Information loss that Tau
      * @param T Tuple
