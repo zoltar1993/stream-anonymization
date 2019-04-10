@@ -18,6 +18,7 @@ public class FileDataAccessor implements DataAccessor{
         List<Tuple> res = null;
         try{
             res = Files.lines(Paths.get(fileName))
+                    .limit(n)
                     .map(line -> lineToTuple(line))
                     .collect(Collectors.toList());
         } catch( IOException e ){
