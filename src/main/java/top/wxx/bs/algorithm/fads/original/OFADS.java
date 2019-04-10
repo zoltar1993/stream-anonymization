@@ -127,21 +127,19 @@ public class OFADS {
         
         @Override
         public void run() {
-            
-                try {
-                    sleep(Delta-1);
+            try {
+                sleep(Delta-1);
                 for(;;){
-                
-            if(Buffer.size()==0)break;
-            t=Buffer.firstElement();
-            if(System.currentTimeMillis()-t.getReceivedTime()>=Delta){
-                System.out.println("Anonymize: "+t.toString());
-                publishTuple();
-            }
-        }
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(OFADS.class.getName()).log(Level.SEVERE, null, ex);
+                    if(Buffer.size()==0)break;
+                    t=Buffer.firstElement();
+                    if(System.currentTimeMillis()-t.getReceivedTime()>=Delta){
+                        System.out.println("Anonymize: "+t.toString());
+                        publishTuple();
+                    }
                 }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(OFADS.class.getName()).log(Level.SEVERE, null, ex);
+            }
             System.out.println("Anonymization finished Anonymization finished Anonymization finished Anonymization finished Anonymization finished Anonymization finished ");
             PublishResult();
         }
