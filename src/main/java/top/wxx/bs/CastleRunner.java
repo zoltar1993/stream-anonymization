@@ -10,7 +10,7 @@ import top.wxx.bs.algorithm.castle.original.OCASTLE;
 public class CastleRunner {
 
     public static void main(String... args){
-        int N = 20; // data/adultCASLE.csv 里有 16281 条数据，确定只用20条?
+        int N = 10000; // data/adultCASLE.csv 里有 16281 条数据，确定只用20条?
         int K = 4;
         int D = 10;
         int B = 6;
