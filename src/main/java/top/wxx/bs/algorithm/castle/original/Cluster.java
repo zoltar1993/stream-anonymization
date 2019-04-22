@@ -28,17 +28,13 @@ public class Cluster {
     //Tuples in cluster
     ArrayList<Tuple> tuples;
     //Adult tree
-    AdultTree Trees;
     AdultRange Ranges;
 
-    Cluster(AdultTree tr,AdultRange rn) {
-        this.Trees=tr;
+    Cluster(AdultRange rn) {
         this.Ranges=rn;
     }    
     
-    Cluster(AdultTree tr,AdultRange rn,Tuple T) {
-        
-        this.Trees=tr;
+    Cluster(AdultRange rn,Tuple T) {
         this.Ranges=rn;
         
         this.createdTime = System.currentTimeMillis();
@@ -62,11 +58,11 @@ public class Cluster {
         this.fhlweightRange.enlargeRange(T.fhlweight);
         this.edu_numRange.enlargeRange(T.education_num);
         this.hours_weekRange.enlargeRange(T.hour_per_week);
-        this.work_class=Trees.WorkClass.getLCA(this.work_class,T.work_class);
-        this.education=Trees.Education.getLCA(this.education,T.education);
-        this.marital_status=Trees.MaritalStatus.getLCA(this.marital_status,T.marital_status);
-        this.race=Trees.Race.getLCA(this.race,T.race);
-        this.gender=Trees.Gender.getLCA(this.gender,T.gender);
+        this.work_class=AdultTree.WorkClass.getLCA(this.work_class,T.work_class);
+        this.education=AdultTree.Education.getLCA(this.education,T.education);
+        this.marital_status=AdultTree.MaritalStatus.getLCA(this.marital_status,T.marital_status);
+        this.race=AdultTree.Race.getLCA(this.race,T.race);
+        this.gender=AdultTree.Gender.getLCA(this.gender,T.gender);
         }
         tuples.add(T);
     }
@@ -104,28 +100,28 @@ public class Cluster {
         en+=g-o;
         
         //work class
-        o=Trees.WorkClass.getLeafNumber(this.work_class)/Trees.WorkClass.getLeafNumber();
-        g=Trees.WorkClass.getLeafNumber(C.work_class)/Trees.WorkClass.getLeafNumber();
+        o=AdultTree.WorkClass.getLeafNumber(this.work_class)/AdultTree.WorkClass.getLeafNumber();
+        g=AdultTree.WorkClass.getLeafNumber(C.work_class)/AdultTree.WorkClass.getLeafNumber();
         en+=g-o;
         
         //education
-        o=Trees.Education.getLeafNumber(this.education)/Trees.Education.getLeafNumber();
-        g=Trees.Education.getLeafNumber(C.education)/Trees.Education.getLeafNumber();
+        o=AdultTree.Education.getLeafNumber(this.education)/AdultTree.Education.getLeafNumber();
+        g=AdultTree.Education.getLeafNumber(C.education)/AdultTree.Education.getLeafNumber();
         en+=g-o;
         
         //marital status
-        o=Trees.MaritalStatus.getLeafNumber(this.marital_status)/Trees.MaritalStatus.getLeafNumber();
-        g=Trees.MaritalStatus.getLeafNumber(C.marital_status)/Trees.MaritalStatus.getLeafNumber();
+        o=AdultTree.MaritalStatus.getLeafNumber(this.marital_status)/AdultTree.MaritalStatus.getLeafNumber();
+        g=AdultTree.MaritalStatus.getLeafNumber(C.marital_status)/AdultTree.MaritalStatus.getLeafNumber();
         en+=g-o;
         
         //race
-        o=Trees.Race.getLeafNumber(this.race)/Trees.Race.getLeafNumber();
-        g=Trees.Race.getLeafNumber(C.race)/Trees.Race.getLeafNumber();
+        o=AdultTree.Race.getLeafNumber(this.race)/AdultTree.Race.getLeafNumber();
+        g=AdultTree.Race.getLeafNumber(C.race)/AdultTree.Race.getLeafNumber();
         en+=g-o;
         
         //gender
-        o=Trees.Gender.getLeafNumber(this.gender)/Trees.Gender.getLeafNumber();
-        g=Trees.Gender.getLeafNumber(C.gender)/Trees.Gender.getLeafNumber();
+        o=AdultTree.Gender.getLeafNumber(this.gender)/AdultTree.Gender.getLeafNumber();
+        g=AdultTree.Gender.getLeafNumber(C.gender)/AdultTree.Gender.getLeafNumber();
         en+=g-o;
         
         en=en/9.0;
@@ -148,11 +144,11 @@ public class Cluster {
         IL+=this.fhlweightRange.getRangeSize()/Ranges.fhlweightRange.getRangeSize();
         IL+=this.edu_numRange.getRangeSize()/Ranges.edu_numRange.getRangeSize();
         IL+=this.hours_weekRange.getRangeSize()/Ranges.hours_weekRange.getRangeSize();
-        IL+=Trees.WorkClass.getLeafNumber(this.work_class)/Trees.WorkClass.getLeafNumber();
-        IL+=Trees.Education.getLeafNumber(this.education)/Trees.Education.getLeafNumber();
-        IL+=Trees.MaritalStatus.getLeafNumber(this.marital_status)/Trees.MaritalStatus.getLeafNumber();
-        IL+=Trees.Race.getLeafNumber(this.race)/Trees.Race.getLeafNumber();
-        IL+=Trees.Gender.getLeafNumber(this.gender)/Trees.Gender.getLeafNumber();
+        IL+=AdultTree.WorkClass.getLeafNumber(this.work_class)/AdultTree.WorkClass.getLeafNumber();
+        IL+=AdultTree.Education.getLeafNumber(this.education)/AdultTree.Education.getLeafNumber();
+        IL+=AdultTree.MaritalStatus.getLeafNumber(this.marital_status)/AdultTree.MaritalStatus.getLeafNumber();
+        IL+=AdultTree.Race.getLeafNumber(this.race)/AdultTree.Race.getLeafNumber();
+        IL+=AdultTree.Gender.getLeafNumber(this.gender)/AdultTree.Gender.getLeafNumber();
         
         //??
         IL=IL/9.0;
@@ -192,11 +188,11 @@ public class Cluster {
         if(this.hours_weekRange.isBelongs(T.hour_per_week)==false)return false;
 
         //categorical
-        if(Trees.Education.getLCA(this.education, T.education).equals(this.education)==false)return false;
-        if(Trees.MaritalStatus.getLCA(this.marital_status, T.marital_status).equals(this.marital_status)==false)return false;
-        if(Trees.WorkClass.getLCA(this.work_class, T.work_class).equals(this.work_class)==false)return false;
-        if(Trees.Race.getLCA(this.race, T.race).equals(this.race)==false)return false;
-        if(Trees.Gender.getLCA(this.gender, T.gender).equals(this.gender)==false)return false;
+        if(AdultTree.Education.getLCA(this.education, T.education).equals(this.education)==false)return false;
+        if(AdultTree.MaritalStatus.getLCA(this.marital_status, T.marital_status).equals(this.marital_status)==false)return false;
+        if(AdultTree.WorkClass.getLCA(this.work_class, T.work_class).equals(this.work_class)==false)return false;
+        if(AdultTree.Race.getLCA(this.race, T.race).equals(this.race)==false)return false;
+        if(AdultTree.Gender.getLCA(this.gender, T.gender).equals(this.gender)==false)return false;
 
         return true;
     }
@@ -221,13 +217,12 @@ public class Cluster {
         this.edu_numRange=Ranges.edu_numRange;
         this.hours_weekRange=Ranges.hours_weekRange;
         
-        this.work_class = Trees.WorkClass.getRootName();
-        this.education = Trees.Education.getRootName();
-        this.marital_status = Trees.MaritalStatus.getRootName();
-        this.race = Trees.Race.getRootName();
-        this.gender = Trees.Gender.getRootName();
+        this.work_class = AdultTree.WorkClass.getRootName();
+        this.education = AdultTree.Education.getRootName();
+        this.marital_status = AdultTree.MaritalStatus.getRootName();
+        this.race = AdultTree.Race.getRootName();
+        this.gender = AdultTree.Gender.getRootName();
         tuples=null;
-        Trees=null;
         Ranges=null;
     }
 }

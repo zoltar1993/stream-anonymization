@@ -1,17 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package top.wxx.bs.algorithm.castle.original;
 
-import top.wxx.bs.algorithm.fads.original.OFADS;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,48 +63,7 @@ public class OCASTLE {
         this.Tau = 0.0;
 
 
-        dataAccessor = new DataAccessor() {
-            @Override
-            public List<Tuple> getAllTuple(int n){
-                List<Tuple> res = new LinkedList<>();
-
-
-                //Connection
-                Connection con = null;
-                try{
-                    Class.forName("com.mysql.jdbc.Driver");
-                    con = null;
-                    con = DriverManager.getConnection("jdbc:mysql://localhost/Adult", "root", "");
-                    System.out.print("Database is connected !");
-                } catch( ClassNotFoundException | SQLException e ){
-                    System.out.print("Do not connect to DB - Error:" + e);
-                    throw new RuntimeException("some error occur : ", e);
-                }
-                try{
-                    String query = "select * from dataset limit " + n + ";";
-                    Statement statement = con.createStatement();
-                    ResultSet rs = statement.executeQuery(query);
-                    System.out.println(NTuples + " data loaded from database");
-                    while( rs.next() ){
-                        int age = rs.getInt(2);
-                        int fhlweight = rs.getInt(3);
-                        int education_num = rs.getInt(4);
-                        int hours_per_week = rs.getInt(5);
-                        String work_class = rs.getString(6);
-                        String education = rs.getString(7);
-                        String marital_status = rs.getString(8);
-                        String race = rs.getString(9);
-                        String gender = rs.getString(10);
-                        Tuple t = new Tuple(RTuples, RTuples, age, fhlweight, education_num, hours_per_week, work_class, education, marital_status, race, gender);
-                        res.add(t);
-                    }
-                } catch( Exception e ){
-                    throw new RuntimeException("some error occur : ", e);
-                }
-
-                return res;
-            }
-        };
+        dataAccessor = null;
 
         //Buffer
         Buffer = new Vector<Tuple>();
@@ -128,9 +76,6 @@ public class OCASTLE {
 
         //Create Range
         Ranges = new AdultRange();
-
-        //Create tree
-        Trees = new AdultTree();
 
         //Output
         Output = new Vector<AnonymizationOutput>();
@@ -155,7 +100,7 @@ public class OCASTLE {
                     }
 
                 } catch( Exception ex ){
-                    Logger.getLogger(OFADS.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(OCASTLE.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 System.out.println("reading fnished reading fnished reading fnished reading fnishedreading fnishedreading fnishedreading fnishedreading fnished");
             }
@@ -181,7 +126,7 @@ public class OCASTLE {
                     t = Buffer.firstElement();
                     C = BestSelection(t);
                     if( C == null ){
-                        Cluster Cl = new Cluster(Trees, Ranges, t);
+                        Cluster Cl = new Cluster(Ranges, t);
                         Clusters.add(Cl);
                     } else {
                         C.addTuple(t);
@@ -220,13 +165,13 @@ public class OCASTLE {
      */
     Cluster BestSelection(Tuple T){
         int currentsize = Clusters.size();
-        enlargeCost[] E = new enlargeCost[currentsize];
-        double e;
+        EnlargeCost[] E = new EnlargeCost[currentsize];
 
         double mine = Double.MAX_VALUE;
-        for( int i = 0; i < currentsize; i++ ){
+        double e;
+        for( int i = 0 ; i < currentsize; i++ ){
             e = Clusters.get(i).Enlargement(T);
-            E[i] = new enlargeCost(i, e);
+            E[i] = new EnlargeCost(i, e);
             if( e < mine ) mine = e;
         }
 
@@ -247,10 +192,9 @@ public class OCASTLE {
         Random rd = new Random();
         Cluster cl = null;
         if( SetOk.isEmpty() ){
-            if( KClusters.size() >= Beta ){
-
+            if( Clusters.size() >= Beta ){
                 int index = rd.nextInt(SetCmin.size());
-                cl = Clusters.get(index);
+                cl = Clusters.get(SetCmin.get(index));
             }
         } else {
             int index = rd.nextInt(SetOk.size());
@@ -405,7 +349,7 @@ public class OCASTLE {
      * @return return suppressed cluster
      */
     public Cluster getSuppressCluster(){
-        Cluster SupCl = new Cluster(Trees, Ranges);
+        Cluster SupCl = new Cluster(Ranges);
         SupCl.SuppressCluster();
         return SupCl;
     }

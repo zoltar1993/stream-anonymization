@@ -10,15 +10,15 @@ package top.wxx.bs.algorithm.castle.original;
  *
  * @author 77781225
  */
-public class enlargeCost {
+public class EnlargeCost {
        public int index;
        public double cost;
 
-    public enlargeCost(int index, double cost) {
+    public EnlargeCost(int index, double cost) {
         this.index = index;
         this.cost = cost;
     }
     
-    public enlargeCost() {
+    public EnlargeCost() {
     }
 }
