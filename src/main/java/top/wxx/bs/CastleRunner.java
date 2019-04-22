@@ -17,7 +17,6 @@ public class CastleRunner {
 
         OCASTLE ocastle = new OCASTLE(N, K, D, B);
 
-        // 设置使用文件读数据，默认从数据库读
         ocastle.setDataAccessor( new FileDataAccessor() );
 
         ocastle.startAll();

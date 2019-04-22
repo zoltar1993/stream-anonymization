@@ -1,7 +1,8 @@
 package top.wxx.bs.algorithm.castle.original;
 
-
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,7 +33,9 @@ public class OCASTLE {
     AdultTree Trees;
 
     //Buffer
-    Vector<Tuple> Buffer;
+    BlockingQueue<Tuple> buffer;
+    BlockingQueue<Tuple> readedBuffer;
+
     //Non-K anon clusters
     Vector<Cluster> Clusters;
     // K-anonymous clusters
@@ -66,7 +69,8 @@ public class OCASTLE {
         dataAccessor = null;
 
         //Buffer
-        Buffer = new Vector<Tuple>();
+        buffer = new LinkedBlockingDeque<>();
+        readedBuffer = new LinkedBlockingDeque<>();
 
         //Non-K anon clusters
         Clusters = new Vector<Cluster>();
@@ -93,7 +97,7 @@ public class OCASTLE {
                         Ranges.edu_numRange.enlargeRange(tuple.education_num);
                         Ranges.hours_weekRange.enlargeRange(tuple.hour_per_week);
 
-                        Buffer.add(tuple);
+                        buffer.offer(tuple);
 //                    sleep(5);
                         RTuples++;
                         System.out.println(tuple.toString());
@@ -109,9 +113,6 @@ public class OCASTLE {
         //Anonymizing phase
         Anonymize = new Thread() {
 
-            Tuple t = new Tuple();
-            Cluster C;
-
             @Override
             public void run(){
 
@@ -122,28 +123,41 @@ public class OCASTLE {
                     e.printStackTrace();
                 }
 
-                while( Buffer.size() != 0 ){
-                    t = Buffer.firstElement();
-                    C = BestSelection(t);
-                    if( C == null ){
-                        Cluster Cl = new Cluster(Ranges, t);
-                        Clusters.add(Cl);
+                while( true ){
+                    Tuple t = new Tuple();
+                    Cluster c;
+
+                    t = take(buffer);
+
+                    c = BestSelection(t);
+                    if( c == null ){
+                        Cluster cl = new Cluster(Ranges, t);
+                        Clusters.add(cl);
                     } else {
-                        C.addTuple(t);
+                        c.addTuple(t);
+                    }
+                    readedBuffer.offer(t);
+
+
+                    if( readedBuffer.size() > Delta ){
+                        DelayConstraint( take(readedBuffer) );
                     }
                 }
-
-                Tuple t = Buffer.get(0);
-
-                if( RTuples - t.receivedOrder >= Delta ){
-                    Buffer.remove(0);
-                    DelayConstraint(t);
-                }
-
-
             }
         };
     }//Constructor ends here...
+
+    private Tuple take(BlockingQueue<Tuple> buffer){
+        Tuple t = null;
+
+        try{
+            t = buffer.take();
+        } catch( InterruptedException e ){
+            throw new RuntimeException("从buffer中读取tuple异常");
+        }
+
+        return t;
+    }
 
 
     public void startAll(){
