@@ -26,8 +26,9 @@ public class OCASTLE {
 
 
     // Threads for the stream
-    Thread Read;
-    Thread Anonymize;
+    Thread ReadThread;
+    Thread AnonymizeThread;
+    Thread OutputThread;
     Thread CheckKC;
 
     // trees and ranges
@@ -86,7 +87,7 @@ public class OCASTLE {
         outputBuffer = new LinkedBlockingDeque<>();
 
         // Reading phase
-        Read = new Thread() {
+        ReadThread = new Thread() {
             @Override
             public void run(){
                 try{
@@ -113,7 +114,7 @@ public class OCASTLE {
         };// read phase
 
         //Anonymizing phase
-        Anonymize = new Thread() {
+        AnonymizeThread = new Thread() {
 
             @Override
             public void run(){
@@ -147,6 +148,20 @@ public class OCASTLE {
                 }
             }
         };
+
+        OutputThread = new Thread(){
+            @Override
+            public void run(){
+                while( true ){
+                    try{
+                        AnonymizationOutput output = takeOutput(outputBuffer);
+                        logger.info("output : {}", output);
+                    } catch( Exception e ){
+                        logger.error("error in outputThread");
+                    }
+                }
+            }
+        };
     }//Constructor ends here...
 
     private Tuple take(BlockingQueue<Tuple> buffer){
@@ -161,10 +176,23 @@ public class OCASTLE {
         return t;
     }
 
+    private AnonymizationOutput takeOutput(BlockingQueue<AnonymizationOutput> buffer){
+        AnonymizationOutput output = null;
+
+        try{
+            output = buffer.take();
+        } catch( Exception e ) {
+            throw new RuntimeException("从buffer中读取tuple异常");
+        }
+
+        return output;
+    }
+
 
     public void startAll(){
-        Read.start();
-        Anonymize.start();
+        ReadThread.start();
+        AnonymizeThread.start();
+        OutputThread.start();
         // CheckKC.start();
     }
 
@@ -301,7 +329,7 @@ public class OCASTLE {
         for( Cluster Cj : SC ){
             for( Tuple T : Cj.tuples ){
                 anony = new AnonymizationOutput(T, Cj);
-                outputBuffer.add(anony);
+                outputBuffer.offer(anony);
             }
             double IL = Cj.InfoLoss();
             if( IL > Tau ) Tau = IL;
@@ -314,54 +342,90 @@ public class OCASTLE {
 
     /**
      * Split big clusters into several clusters
-     *
      * @param C Cluster
      * @return cluster set
      */
-    private ArrayList<Cluster> Split(Cluster C){
-        ArrayList<Cluster> AC = new ArrayList<Cluster>();
-        ArrayList<Bucket> BS = new ArrayList<Bucket>();
-        ArrayList<Tuple> TS = C.tuples;//tuples of C
-
-        Tuple t = TS.get(0);
-        Bucket b = new Bucket(t);
+    private ArrayList<Cluster> Split(Cluster C) {
+        ArrayList<Cluster> AC=new ArrayList<Cluster>();
+        ArrayList<Bucket> BS=new ArrayList<Bucket>();
+        ArrayList<Tuple> TS=C.tuples;//tuples of C
+        Tuple t=TS.get(0);
+        Bucket b=new Bucket(t);
         BS.add(b);
-
-        // assign buckets 
-        for( int i = 1; i < TS.size(); i++ ){
-            int assigned = 0;
-            Tuple td = TS.get(i);
-            for( Bucket B : BS ){
-                if( B.canInclude(td) ){
+        // assign buckets
+        for(int i=1;i<TS.size();i++){
+            int assigned=0;
+            Tuple td=TS.get(i);
+            for(Bucket B: BS){
+                if(B.canInclude(td)){
                     B.addTuple(td);
-                    assigned = 1;
+                    assigned=1;
                 }
             }
-            if( assigned == 0 ){
-                b = new Bucket(td);
+            if(assigned==0){
+                b=new Bucket(td);
                 BS.add(b);
             }
-        }// finished grouping tuples by pid into Buckets BS 
-        Random rd = new Random();
+        }// finished grouping tuples by pid into Buckets BS
+
+
+        Random rd=new Random();
         int index;
-        while( BS.size() >= Kanon ){
-            index = rd.nextInt(BS.size());
-            Bucket B = BS.get(index);// select random bucket
+
+        while(BS.size()>=Kanon){
+            index=rd.nextInt(BS.size());
+            Bucket B=BS.get(index);// select random bucket
             Tuple Tk;//Tk- find KNN of Tk
-            if( B.getSize() == 1 ){
-                Tk = B.tuples.get(0);
+            if(B.getSize()==1){
+                Tk=B.tuples.get(0);
                 BS.remove(B);
-            } else {
-                Tk = B.tuples.get(rd.nextInt(B.getSize()));
+            }
+            else {
+                Tk=B.tuples.get(rd.nextInt(B.getSize()));
                 B.removeTuple(Tk);
             }
 
+            Cluster subC = new Cluster(Ranges,Tk);
+            if(B == null)
+                BS.remove(B);
 
+            for(int o = 0;o<B.getSize();o++) {
+                Tuple Tb = B.tuples.get(o);
+                subC.addTuple(Tb);
+                B.tuples.remove(o);
+
+                if(B == null)
+                    BS.remove(B);
+            }
+
+            AC.add(subC);
+            BS.remove(B);
         }
+        double mine=Double.MAX_VALUE;
+        EnlargeCost[] E=new EnlargeCost[AC.size()];
+        for(int d=0;d<BS.size();d++) {
+            Bucket Bi = BS.get(d);
+            Tuple Ti=Bi.tuples.get(rd.nextInt(Bi.getSize()));
+            for(int i=0;i<AC.size();i++) {
+                double e=AC.get(i).ILAfterAddTuple(Ti);
+                E[i]=new EnlargeCost(i,e);
+                if(e<mine)mine=e;
+            }
 
+            for(int i=0;i<AC.size();i++) {
 
+                if(E[i].cost==mine) {
+                    for(int j= 0 ;j<Bi.getSize();j++) {
+                        AC.get(E[i].index).addTuple(Bi.tuples.get(j));
+                    }
+                }
+            }
+
+            BS.remove(Bi);
+        }
         return AC;
     }
+
 
 
     /**

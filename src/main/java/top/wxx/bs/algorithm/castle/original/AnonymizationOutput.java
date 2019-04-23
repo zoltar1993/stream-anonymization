@@ -20,4 +20,14 @@ public class AnonymizationOutput {
         this.cluster = cluster;
         cluster.tuples=null;
     }
+
+    @Override
+    public String toString(){
+        final StringBuffer sb = new StringBuffer("AnonymizationOutput{");
+        sb.append("tuple=").append(tuple);
+        sb.append(", cluster=").append(cluster);
+        sb.append(", InfoLoss=").append(InfoLoss);
+        sb.append('}');
+        return sb.toString();
+    }
 }
