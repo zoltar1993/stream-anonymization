@@ -1,15 +1,17 @@
 package top.wxx.bs.algorithm.castle.original;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author 77781225
  */
 public class OCASTLE {
+    final private static Logger logger = LoggerFactory.getLogger(OCASTLE.class);
 
     //Parameters
     int NTuples;// Number of tuples
@@ -104,9 +106,9 @@ public class OCASTLE {
                     }
 
                 } catch( Exception ex ){
-                    Logger.getLogger(OCASTLE.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.error("error when read tuple", ex);
                 }
-                System.out.println("reading fnished reading fnished reading fnished reading fnishedreading fnishedreading fnishedreading fnishedreading fnished");
+                logger.info("reading fnished reading fnished reading fnished reading fnishedreading fnishedreading fnishedreading fnishedreading fnished");
             }
         };// read phase
 
@@ -225,6 +227,9 @@ public class OCASTLE {
      */
     public void DelayConstraint(Tuple T){
         Cluster C = FindClusterOfTuple(T);
+
+        if(C==null) return;
+
         int size = C.getSize();
 
         if( size >= Kanon ){

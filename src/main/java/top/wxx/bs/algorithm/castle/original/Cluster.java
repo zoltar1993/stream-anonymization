@@ -30,6 +30,8 @@ public class Cluster {
     //Adult tree
     AdultRange Ranges;
 
+    Cluster(){}
+
     Cluster(AdultRange rn) {
         this.Ranges=rn;
     }    

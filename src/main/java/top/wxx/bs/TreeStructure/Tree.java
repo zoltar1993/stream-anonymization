@@ -5,6 +5,10 @@
  */
 package top.wxx.bs.TreeStructure;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import top.wxx.bs.util.JsonUtil;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,6 +17,7 @@ import java.util.Iterator;
  * @author Ankhbayar
  */
 public class Tree {
+    final private static Logger logger = LoggerFactory.getLogger(Tree.class);
 
     private final static int ROOT = 0;
     private String rootname = null;
@@ -109,6 +114,16 @@ public class Tree {
     // get number of leafs
     public double getLeafNumber(String data){
         Node n = nodes.get(data);
+
+        if( n==null ){
+            logger.info(data);
+            if( data==null ){
+                logger.info("data : {} , data.length : {}\n tree: {}", data, JsonUtil.toJsonStr(this) );
+            } else {
+                logger.info("data : {} , data.length : {}\n tree: {}", data, data.length(), JsonUtil.toJsonStr(this) );
+            }
+        }
+
         if( n.isLeaf() ) return 1;
         else {
             int leafnumber = 0;
