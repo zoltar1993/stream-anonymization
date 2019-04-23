@@ -43,9 +43,8 @@ public class OCASTLE {
     // K-anonymous clusters
     Vector<Cluster> KClusters;
     //Output
-    Vector<AnonymizationOutput> Output;
+    BlockingQueue<AnonymizationOutput> outputBuffer;
 
-    long startTime;
 
     DataAccessor dataAccessor = null;
 
@@ -84,7 +83,8 @@ public class OCASTLE {
         Ranges = new AdultRange();
 
         //Output
-        Output = new Vector<AnonymizationOutput>();
+        outputBuffer = new LinkedBlockingDeque<>();
+
         // Reading phase
         Read = new Thread() {
             @Override
@@ -245,7 +245,7 @@ public class OCASTLE {
                 int index = rd.nextInt(KC_set.size());
                 Cluster Cl = KC_set.get(index);
                 AnonymizationOutput Anony = new AnonymizationOutput(T, Cl);
-                Output.add(Anony);
+                outputBuffer.offer(Anony);
                 C.tuples.remove(T);// After anonymizing should remove tuple from cluster
                 return;
             }//Anonymize with existing Ks cluster
@@ -301,7 +301,7 @@ public class OCASTLE {
         for( Cluster Cj : SC ){
             for( Tuple T : Cj.tuples ){
                 anony = new AnonymizationOutput(T, Cj);
-                Output.add(anony);
+                outputBuffer.add(anony);
             }
             double IL = Cj.InfoLoss();
             if( IL > Tau ) Tau = IL;
