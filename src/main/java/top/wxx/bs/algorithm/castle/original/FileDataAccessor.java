@@ -15,11 +15,10 @@ public class FileDataAccessor implements DataAccessor{
     private String fileName = "data/adultCASTLE.csv";
 
     @Override
-    public List<Tuple> getAllTuple(int n) {
+    public List<Tuple> getAllTuple() {
         List<Tuple> res = null;
         try{
             res = Files.lines(Paths.get(fileName))
-                    .limit(n)
                     .map(line -> lineToTuple(line))
                     .collect(Collectors.toList());
         } catch( IOException e ){

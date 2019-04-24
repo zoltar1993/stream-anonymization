@@ -14,9 +14,7 @@ public class OCASTLE {
     final private static Logger logger = LoggerFactory.getLogger(OCASTLE.class);
 
     //Parameters
-    int NTuples;// Number of tuples
     int Kanon; // anonymity degree
-    int RTuples;// Total red tuples
 
     //Time constraints
     int Delta;// allowed time for tuple
@@ -56,11 +54,10 @@ public class OCASTLE {
      * @param D Delta-windows size
      * @param B Beta- KCluster number
      */
-    public OCASTLE(int N, int K, int D, int B){
+    public OCASTLE(int K, int D, int B){
 
 
         //main parameters
-        this.NTuples = N;
         this.Kanon = K;
         this.Delta = D;
         this.Beta = B;
@@ -91,8 +88,7 @@ public class OCASTLE {
             @Override
             public void run(){
                 try{
-                    RTuples = 0;
-                    List<Tuple> tuples = dataAccessor.getAllTuple(NTuples);
+                    List<Tuple> tuples = dataAccessor.getAllTuple();
                     for( Tuple tuple : tuples ){
                         // englarge Ranges;
                         Ranges.ageRange.enlargeRange(tuple.age);
@@ -102,7 +98,6 @@ public class OCASTLE {
 
                         buffer.offer(tuple);
 //                    sleep(5);
-                        RTuples++;
                         System.out.println(tuple.toString());
                     }
 

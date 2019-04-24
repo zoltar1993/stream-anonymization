@@ -7,5 +7,5 @@ import java.util.List;
  */
 
 public interface DataAccessor {
-    List<Tuple> getAllTuple(int n);
+    List<Tuple> getAllTuple();
 }
