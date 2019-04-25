@@ -13,10 +13,13 @@ public class CastleRunner {
         int K = 4;
         int D = 10;
         int B = 6;
+        double T = 0.6;
 
-        OCASTLE ocastle = new OCASTLE(K, D, B);
+        int n = 2000;
 
-        ocastle.setDataAccessor( new FileDataAccessor() );
+        OCASTLE ocastle = new OCASTLE(K, D, B, T);
+
+        ocastle.setDataAccessor( new FileDataAccessor(n) );
 
         ocastle.startAll();
     }

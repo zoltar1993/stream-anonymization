@@ -20,7 +20,7 @@ public class OCASTLE {
     int Delta;// allowed time for tuple
     // allowed time for tuple
     int Beta;// allowed time for k-anonymous cluster
-    double Tau;
+    double Tau = 0.6;
 
 
     // Threads for the stream
@@ -48,16 +48,14 @@ public class OCASTLE {
      * @param D Delta-windows size
      * @param B Beta- KCluster number
      */
-    public OCASTLE(int K, int D, int B){
+    public OCASTLE(int K, int D, int B, double T){
 
 
         //main parameters
         this.Kanon = K;
         this.Delta = D;
         this.Beta = B;
-        // TAU
-        this.Tau = 0.0;
-
+        this.Tau = T;
 
         dataAccessor = null;
 
@@ -311,7 +309,6 @@ public class OCASTLE {
                 outputBuffer.offer(anony);
             }
             double IL = Cj.InfoLoss();
-            if( IL > Tau ) Tau = IL;
             if( Tau > IL ){
                 KClusters.add(Cj);
             }

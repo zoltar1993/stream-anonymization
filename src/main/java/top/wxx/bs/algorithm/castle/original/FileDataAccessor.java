@@ -13,12 +13,18 @@ import java.util.stream.Collectors;
 
 public class FileDataAccessor implements DataAccessor{
     private String fileName = "data/adultCASTLE.csv";
+    private int n;
+
+    public FileDataAccessor(int n){
+        this.n = n;
+    }
 
     @Override
     public List<Tuple> getAllTuple() {
         List<Tuple> res = null;
         try{
             res = Files.lines(Paths.get(fileName))
+                    .limit(n)
                     .map(line -> lineToTuple(line))
                     .collect(Collectors.toList());
         } catch( IOException e ){
