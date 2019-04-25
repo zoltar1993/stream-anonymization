@@ -31,6 +31,7 @@ public class Cluster {
     static AdultRange Ranges;
 
     static {
+        Ranges = new AdultRange();
         Ranges.ageRange = new Range(90,17);
         Ranges.edu_numRange = new Range(16,1);
         Ranges.fhlweightRange = new Range(1490400,13492);
