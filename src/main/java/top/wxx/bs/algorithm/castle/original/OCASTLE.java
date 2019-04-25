@@ -27,11 +27,6 @@ public class OCASTLE {
     Thread ReadThread;
     Thread AnonymizeThread;
     Thread OutputThread;
-    Thread CheckKC;
-
-    // trees and ranges
-    AdultRange Ranges;
-    AdultTree Trees;
 
     //Buffer
     BlockingQueue<Tuple> buffer;
@@ -49,7 +44,6 @@ public class OCASTLE {
 
 
     /**
-     * @param N number of tuple
      * @param K anonymity degree
      * @param D Delta-windows size
      * @param B Beta- KCluster number
@@ -77,9 +71,6 @@ public class OCASTLE {
         //K-anonymous clusters
         KClusters = new Vector<Cluster>();
 
-        //Create Range
-        Ranges = new AdultRange();
-
         //Output
         outputBuffer = new LinkedBlockingDeque<>();
 
@@ -90,21 +81,14 @@ public class OCASTLE {
                 try{
                     List<Tuple> tuples = dataAccessor.getAllTuple();
                     for( Tuple tuple : tuples ){
-                        // englarge Ranges;
-                        Ranges.ageRange.enlargeRange(tuple.age);
-                        Ranges.fhlweightRange.enlargeRange(tuple.fhlweight);
-                        Ranges.edu_numRange.enlargeRange(tuple.education_num);
-                        Ranges.hours_weekRange.enlargeRange(tuple.hour_per_week);
-
                         buffer.offer(tuple);
-//                    sleep(5);
-                        System.out.println(tuple.toString());
+                        logger.info(tuple.toString());
                     }
 
                 } catch( Exception ex ){
                     logger.error("error when read tuple", ex);
                 }
-                logger.info("reading fnished reading fnished reading fnished reading fnishedreading fnishedreading fnishedreading fnishedreading fnished");
+                logger.info("---------------   reading fnished   ---------------");
             }
         };// read phase
 
@@ -129,7 +113,7 @@ public class OCASTLE {
 
                     c = BestSelection(t);
                     if( c == null ){
-                        Cluster cl = new Cluster(Ranges, t);
+                        Cluster cl = new Cluster(t);
                         Clusters.add(cl);
                     } else {
                         c.addTuple(t);
@@ -380,7 +364,7 @@ public class OCASTLE {
                 B.removeTuple(Tk);
             }
 
-            Cluster subC = new Cluster(Ranges,Tk);
+            Cluster subC = new Cluster(Tk);
             if(B == null)
                 BS.remove(B);
 
@@ -427,7 +411,7 @@ public class OCASTLE {
      * @return return suppressed cluster
      */
     public Cluster getSuppressCluster(){
-        Cluster SupCl = new Cluster(Ranges);
+        Cluster SupCl = new Cluster();
         SupCl.SuppressCluster();
         return SupCl;
     }

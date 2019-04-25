@@ -28,17 +28,19 @@ public class Cluster {
     //Tuples in cluster
     ArrayList<Tuple> tuples;
     //Adult tree
-    AdultRange Ranges;
+    static AdultRange Ranges;
+
+    static {
+        Ranges.ageRange = new Range(90,17);
+        Ranges.edu_numRange = new Range(16,1);
+        Ranges.fhlweightRange = new Range(1490400,13492);
+        Ranges.hours_weekRange = new Range(99,1);
+    }
 
     Cluster(){}
 
-    Cluster(AdultRange rn) {
-        this.Ranges=rn;
-    }    
-    
-    Cluster(AdultRange rn,Tuple T) {
-        this.Ranges=rn;
-        
+
+    Cluster(Tuple T) {
         this.createdTime = System.currentTimeMillis();
         this.ageRange =new Range(T.age,T.age);
         this.fhlweightRange = new Range(T.fhlweight, T.fhlweight);
