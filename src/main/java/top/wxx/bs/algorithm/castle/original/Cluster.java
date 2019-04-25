@@ -136,14 +136,14 @@ public class Cluster {
     double ILAfterAddTuple(Tuple T){
        Cluster C=this;
        C.addTuple(T);
-       return C.InfoLoss();
+       return C.infoLoss();
     }
     
     /**
      * Information loss of whole cluster ???
      * @return Information loss of whole cluster
      */
-    double InfoLoss(){
+    double infoLoss(){
         double IL=0.0;
         IL+=this.ageRange.getRangeSize()/Ranges.ageRange.getRangeSize();
         IL+=this.fhlweightRange.getRangeSize()/Ranges.fhlweightRange.getRangeSize();

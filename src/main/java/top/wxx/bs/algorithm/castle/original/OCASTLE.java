@@ -13,35 +13,28 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class OCASTLE {
     final private static Logger logger = LoggerFactory.getLogger(OCASTLE.class);
 
-    //Parameters
     int Kanon; // anonymity degree
-
-    //Time constraints
-    int Delta;// allowed time for tuple
-    // allowed time for tuple
-    int Beta;// allowed time for k-anonymous cluster
+    int Delta; // allowed time for tuple
+    int Beta; // limit of Cluster.size()
     double Tau = 0.6;
+
+
+    //Buffer
+    BlockingQueue<Tuple> buffer;
+    BlockingQueue<Tuple> readedBuffer;
+    BlockingQueue<AnonymizationOutput> outputBuffer;
+
+    // Non-K anon clusters
+    Vector<Cluster> Clusters;
+    // K-anonymous clusters
+    Vector<Cluster> KClusters;
 
 
     // Threads for the stream
     Thread ReadThread;
     Thread AnonymizeThread;
     Thread OutputThread;
-
-    //Buffer
-    BlockingQueue<Tuple> buffer;
-    BlockingQueue<Tuple> readedBuffer;
-
-    //Non-K anon clusters
-    Vector<Cluster> Clusters;
-    // K-anonymous clusters
-    Vector<Cluster> KClusters;
-    //Output
-    BlockingQueue<AnonymizationOutput> outputBuffer;
-
-
     DataAccessor dataAccessor = null;
-
 
     /**
      * @param K anonymity degree
@@ -308,7 +301,7 @@ public class OCASTLE {
                 anony = new AnonymizationOutput(T, Cj);
                 outputBuffer.offer(anony);
             }
-            double IL = Cj.InfoLoss();
+            double IL = Cj.infoLoss();
             if( Tau > IL ){
                 KClusters.add(Cj);
             }
