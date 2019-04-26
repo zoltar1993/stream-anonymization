@@ -18,6 +18,7 @@ public class OCASTLE {
     int Beta; // limit of Cluster.size()
     double Tau = 0.6;
 
+    int clusterId = 0;
 
     //Buffer
     BlockingQueue<Tuple> buffer;
@@ -72,6 +73,7 @@ public class OCASTLE {
                 try{
                     List<Tuple> tuples = dataAccessor.getAllTuple();
                     for( Tuple tuple : tuples ){
+                        tuple.receivedOrder = 0; //此处应有掌声！！！
                         buffer.offer(tuple);
                         logger.info(tuple.toString());
                     }
@@ -105,6 +107,7 @@ public class OCASTLE {
                     c = BestSelection(t);
                     if( c == null ){
                         Cluster cl = new Cluster(t);
+                        cl.createdTime = clusterId++; //此处应有掌声！！！
                         Clusters.add(cl);
                     } else {
                         c.addTuple(t);
@@ -258,6 +261,7 @@ public class OCASTLE {
                 if( m > Clusters.size() / 2 || totalsize < Kanon ){
                     Cluster sup = getSuppressCluster();
                     AnonymizationOutput Anony = new AnonymizationOutput(T, sup);
+                    outputBuffer.offer(Anony);
                     C.tuples.remove(T);// After anonymizing should remove tuple from cluster
                 }//supress and anonymize;
                 else {
@@ -290,23 +294,25 @@ public class OCASTLE {
      * @param C Cluster
      */
     public void OutputCluster(Cluster C){
+
         ArrayList<Cluster> SC = new ArrayList<Cluster>();
         if( C.getSize() >= 2 * Kanon ){
             SC = Split(C);
         } else SC.add(C);
 
         AnonymizationOutput anony = null;
+
         for( Cluster Cj : SC ){
             for( Tuple T : Cj.tuples ){
-                anony = new AnonymizationOutput(T, Cj);
-                outputBuffer.offer(anony);
+                if(T.receivedOrder == 0) {
+                    anony = new AnonymizationOutput(T, Cj);
+                    outputBuffer.offer(anony);
+                    T.receivedOrder = 1; //输出过的元组标记为1
+                }
             }
-            double IL = Cj.infoLoss();
-            if( Tau > IL ){
-                KClusters.add(Cj);
-            }
+            KClusters.add(Cj);
+            Clusters.remove(Cj);
         }
-        Clusters.remove(C);//Remove anonymized cluster
     }
 
     /**
@@ -355,6 +361,7 @@ public class OCASTLE {
             }
 
             Cluster subC = new Cluster(Tk);
+            subC.createdTime = -1; //此处。。。！！！
             if(B == null)
                 BS.remove(B);
 

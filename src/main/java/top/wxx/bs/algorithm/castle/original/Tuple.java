@@ -97,7 +97,7 @@ public class Tuple {
    }
    
    public String toString(){
-       return "Tuple("+receivedOrder +")["+age+"," +fhlweight+","+ education_num+ ", "+
+       return "Tuple("+pid +")["+age+"," +fhlweight+","+ education_num+ ", "+
                                               hour_per_week+", "+ work_class+", "+ education+", "+
                                               marital_status+", "+race+","+ gender+"]";
    }

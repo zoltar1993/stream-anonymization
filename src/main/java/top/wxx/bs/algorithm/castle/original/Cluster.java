@@ -42,6 +42,7 @@ public class Cluster {
 
 
     Cluster(Tuple T) {
+        //this.createdTime = clusterId++;
         this.createdTime = System.currentTimeMillis();
         this.ageRange =new Range(T.age,T.age);
         this.fhlweightRange = new Range(T.fhlweight, T.fhlweight);
