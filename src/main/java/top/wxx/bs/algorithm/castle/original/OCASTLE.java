@@ -245,8 +245,11 @@ public class OCASTLE {
                 Random rd = new Random();
                 int index = rd.nextInt(KC_set.size());
                 Cluster Cl = KC_set.get(index);
-                AnonymizationOutput Anony = new AnonymizationOutput(T, Cl);
-                outputBuffer.offer(Anony);
+                if(T.receivedOrder == 0) {
+                    AnonymizationOutput Anony = new AnonymizationOutput(T, Cl);
+                    outputBuffer.offer(Anony);
+                    T.receivedOrder = 1; //输出过的元组标记为1
+                }
                 C.tuples.remove(T);// After anonymizing should remove tuple from cluster
                 return;
             }//Anonymize with existing Ks cluster
@@ -260,8 +263,11 @@ public class OCASTLE {
 
                 if( m > Clusters.size() / 2 || totalsize < Kanon ){
                     Cluster sup = getSuppressCluster();
-                    AnonymizationOutput Anony = new AnonymizationOutput(T, sup);
-                    outputBuffer.offer(Anony);
+                    if(T.receivedOrder == 0) {
+                        AnonymizationOutput Anony = new AnonymizationOutput(T, sup);
+                        outputBuffer.offer(Anony);
+                        T.receivedOrder = 1; //输出过的元组标记为1
+                    }
                     C.tuples.remove(T);// After anonymizing should remove tuple from cluster
                 }//supress and anonymize;
                 else {

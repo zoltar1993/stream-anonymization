@@ -15,7 +15,7 @@ public class CastleRunner {
         int B = 6;
         double T = 0.5;
 
-        int n = 10000;
+        int n = 40;
 
         OCASTLE ocastle = new OCASTLE(K, D, B, T);
 
