@@ -32,6 +32,18 @@
             <artifactId>guava</artifactId>
             <version>21.0</version>
         </dependency>
+
+
+        <!-- flink dependencies -->
+
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-java_2.12</artifactId>
+            <version>1.8.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+
     </dependencies>
 
 
@@ -54,6 +66,9 @@
                         <manifest>
                             <mainClass>top.wxx.bs.CastleRunner</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <program-class>top.wxx.bs.SocketWindowWordCount</program-class>
+                        </manifestEntries>
                     </archive>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
