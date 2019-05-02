@@ -141,7 +141,7 @@ public class CastleFunc {
     static private void outputCluster(Cluster C, Castle castle, BlockingQueue<AnonymizationOutput> outputBuffer){
         ArrayList<Cluster> SC = new ArrayList<Cluster>();
         if( C.getSize() >= 2 * castle.k ){
-            SC = Split(C, castle);
+            SC = Split(C, castle.k);
         } else SC.add(C);
 
         AnonymizationOutput anony = null;
@@ -164,10 +164,10 @@ public class CastleFunc {
      * @param C Cluster
      * @return cluster set
      */
-    static private ArrayList<Cluster> Split(Cluster C, Castle castle) {
-        ArrayList<Cluster> AC=new ArrayList<Cluster>();
-        ArrayList<Bucket> BS=new ArrayList<Bucket>();
-        ArrayList<Tuple> TS=C.tuples;//tuples of C
+    static private ArrayList<Cluster> Split(Cluster C, int k) {
+        ArrayList<Cluster> AC = new ArrayList<>();
+        ArrayList<Bucket> BS = new ArrayList<>();
+        ArrayList<Tuple> TS = C.tuples;//tuples of C
         Tuple t=TS.get(0);
         Bucket b=new Bucket(t);
         BS.add(b);
@@ -191,7 +191,7 @@ public class CastleFunc {
         Random rd=new Random();
         int index;
 
-        while(BS.size()>=castle.k){
+        while(BS.size() >= k){
             index=rd.nextInt(BS.size());
             Bucket B=BS.get(index);// select random bucket
             Tuple Tk;//Tk- find KNN of Tk
