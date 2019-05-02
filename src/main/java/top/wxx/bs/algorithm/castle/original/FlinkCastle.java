@@ -464,9 +464,15 @@ public class FlinkCastle {
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(parallelism);
 
+
+        // ::::::::::::::::   执行CASTLE算法   :::::::::::::::
         DataStream<String> text = env.readTextFile(filepath);
 
-        DataStream<Tuple> tuples = text.map(line -> DataConvertor.lineToTuple(line));
+        DataStream<Tuple> tuples = text.map(line -> DataConvertor.lineToTuple(line))
+                .filter(t -> {
+                    readedBuffer.offer(t);
+                    return readedBuffer.size() > d;
+                });
 
         tuples.print().setParallelism(1);
 
