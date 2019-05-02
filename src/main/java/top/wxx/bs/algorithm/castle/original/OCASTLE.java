@@ -287,7 +287,7 @@ public class OCASTLE {
      */
     public Cluster FindClusterOfTuple(Tuple T){
         Cluster cl = null;
-        int order = T.receivedOrder;
+        int order = T.pid;
         for( Cluster Cluster : Clusters ){
             if( Cluster.isContains(order) ) return Cluster;
         }

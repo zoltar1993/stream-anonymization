@@ -180,7 +180,7 @@ public class Cluster {
      */
     boolean isContains(int order){
         for(int i=0;i<tuples.size();i++){
-            if(tuples.get(i).receivedOrder==order)return true;
+            if(tuples.get(i).pid==order)return true;
         }
         return false;
     }
