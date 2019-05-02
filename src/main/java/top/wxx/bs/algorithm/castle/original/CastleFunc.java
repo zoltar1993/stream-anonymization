@@ -65,7 +65,7 @@ public class CastleFunc {
      * @param t Tuple
      */
     static public void delayConstraint(Tuple t, Castle castle, BlockingQueue<AnonymizationOutput> outputBuffer){
-        Cluster C = FindClusterOfTuple(t, castle);
+        Cluster C = findClusterOfTuple(t, castle);
 
         if(C==null) return;
 
@@ -124,7 +124,7 @@ public class CastleFunc {
      * @param t Tuple
      * @return Cluster which contains T;
      */
-    static private Cluster FindClusterOfTuple(Tuple t, Castle castle){
+    static private Cluster findClusterOfTuple(Tuple t, Castle castle){
         Cluster cl = null;
         int order = t.receivedOrder;
         for( Cluster Cluster : castle.clusters ){
