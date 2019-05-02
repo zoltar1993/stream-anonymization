@@ -1,11 +1,8 @@
 package top.wxx.bs.algorithm.castle.original;
 
-import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.api.common.functions.ReduceFunction;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.util.Collector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -445,70 +442,35 @@ public class FlinkCastle {
 
 
     public static void main(String... args) throws Exception {
+        final ParameterTool params = ParameterTool.fromArgs(args);
 
-        final String filepath;
-        final int parallelism;
-        try {
-            final ParameterTool params = ParameterTool.fromArgs(args);
-            filepath = params.get("filepath");
-            parallelism = params.getInt("parallelism");
-        } catch (Exception e) {
-            System.err.println("filepath is necessary.");
-            return;
-        }
 
+        // ::::::::::   执行参数   ::::::::::
+
+        final String filepath = params.get("filepath");                 // data file path
+        final int parallelism = params.getInt("parallelism");      // 并行度
+
+        final int k = params.getInt("k");                          // anonymity degree
+        final int d = params.getInt("d");                          // allowed time for tuple
+        final int b = params.getInt("b");                          // limit of Cluster.size()
+        final double tau = params.has("tau") ? params.getDouble("tau") : 0.6;
+
+        final BlockingQueue<Tuple> readedBuffer = new LinkedBlockingDeque<>();
+        final Vector<Cluster> Clusters = new Vector<>();                // Non-K anon clusters
+        final Vector<Cluster> KClusters = new Vector<>();               // K-anonymous clusters
+
+
+        // 初始化执行执行环境
         final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(parallelism);
 
         DataStream<String> text = env.readTextFile(filepath);
 
-        DataStream<WordWithCount> windowCounts = text
-                .flatMap(new FlatMapFunction<String, WordWithCount>() {
-                    @Override
-                    public void flatMap(String value, Collector<WordWithCount> out) {
-                        for (String word : value.split("\\s")) {
-                            out.collect(new WordWithCount(word, 1L));
-                        }
-                    }
-                })
+        DataStream<Tuple> tuples = text.map(line -> DataConvertor.lineToTuple(line));
 
-                .keyBy("word")
-//                .timeWindow(Time.milliseconds(1))
+        tuples.print().setParallelism(1);
 
-                .reduce(new ReduceFunction<WordWithCount>() {
-                    @Override
-                    public WordWithCount reduce(WordWithCount a, WordWithCount b) {
-                        return new WordWithCount(a.word, a.count + b.count);
-                    }
-                });
-
-
-        // print the results with a single thread, rather than in parallel
-        windowCounts.print().setParallelism(1);
-
-        env.execute("Socket Window WordCount");
+        env.execute("Flink Castle Anonymization");
     }
 
-    // ------------------------------------------------------------------------
-
-    /**
-     * Data type for words with count.
-     */
-    public static class WordWithCount {
-
-        public String word;
-        public long count;
-
-        public WordWithCount() {}
-
-        public WordWithCount(String word, long count) {
-            this.word = word;
-            this.count = count;
-        }
-
-        @Override
-        public String toString() {
-            return word + " : " + count;
-        }
-    }
 }
