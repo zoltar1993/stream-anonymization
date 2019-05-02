@@ -13,23 +13,12 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class OCASTLE {
     final private static Logger logger = LoggerFactory.getLogger(OCASTLE.class);
 
-    int Kanon; // anonymity degree
-    int Delta; // allowed time for tuple
-    int Beta; // limit of Cluster.size()
-    double Tau = 0.6;
+    private Castle castle;
 
     int clusterId = 0;
 
-    //Buffer
     BlockingQueue<Tuple> buffer;
-    BlockingQueue<Tuple> readedBuffer;
     BlockingQueue<AnonymizationOutput> outputBuffer;
-
-    // Non-K anon clusters
-    Vector<Cluster> Clusters;
-    // K-anonymous clusters
-    Vector<Cluster> KClusters;
-
 
     // Threads for the stream
     Thread ReadThread;
@@ -43,26 +32,12 @@ public class OCASTLE {
      * @param B Beta- KCluster number
      */
     public OCASTLE(int K, int D, int B, double T){
-
-
-        //main parameters
-        this.Kanon = K;
-        this.Delta = D;
-        this.Beta = B;
-        this.Tau = T;
+        this.castle = new Castle(K,D,B,T);
 
         dataAccessor = null;
 
         //Buffer
         buffer = new LinkedBlockingDeque<>();
-        readedBuffer = new LinkedBlockingDeque<>();
-
-        //Non-K anon clusters
-        Clusters = new Vector<Cluster>();
-
-        //K-anonymous clusters
-        KClusters = new Vector<Cluster>();
-
         //Output
         outputBuffer = new LinkedBlockingDeque<>();
 
@@ -108,15 +83,15 @@ public class OCASTLE {
                     if( c == null ){
                         Cluster cl = new Cluster(t);
                         cl.createdTime = clusterId++; //此处应有掌声！！！
-                        Clusters.add(cl);
+                        castle.clusters.add(cl);
                     } else {
                         c.addTuple(t);
                     }
-                    readedBuffer.offer(t);
+                    castle.readedBuffer.offer(t);
 
 
-                    if( readedBuffer.size() > Delta ){
-                        DelayConstraint( take(readedBuffer) );
+                    if( castle.readedBuffer.size() > castle.d ){
+                        DelayConstraint( take(castle.readedBuffer) );
                     }
                 }
             }
@@ -181,13 +156,13 @@ public class OCASTLE {
      * @return Best cluster for Tuple or NULL
      */
     Cluster BestSelection(Tuple T){
-        int currentsize = Clusters.size();
+        int currentsize = castle.clusters.size();
         EnlargeCost[] E = new EnlargeCost[currentsize];
 
         double mine = Double.MAX_VALUE;
         double e;
         for( int i = 0 ; i < currentsize; i++ ){
-            e = Clusters.get(i).Enlargement(T);
+            e = castle.clusters.get(i).Enlargement(T);
             E[i] = new EnlargeCost(i, e);
             if( e < mine ) mine = e;
         }
@@ -199,8 +174,8 @@ public class OCASTLE {
 
         ArrayList<Integer> SetOk = new ArrayList<Integer>();
         for( int i = 0; i < SetCmin.size(); i++ ){
-            double IL_Cj = Clusters.get(SetCmin.get(i)).ILAfterAddTuple(T);
-            if( IL_Cj <= Tau ){
+            double IL_Cj = castle.clusters.get(SetCmin.get(i)).ILAfterAddTuple(T);
+            if( IL_Cj <= castle.tau ){
                 SetOk.add(SetCmin.get(i));
             }
         }
@@ -209,13 +184,13 @@ public class OCASTLE {
         Random rd = new Random();
         Cluster cl = null;
         if( SetOk.isEmpty() ){
-            if( Clusters.size() >= Beta ){
+            if( castle.clusters.size() >= castle.b ){
                 int index = rd.nextInt(SetCmin.size());
-                cl = Clusters.get(SetCmin.get(index));
+                cl = castle.clusters.get(SetCmin.get(index));
             }
         } else {
             int index = rd.nextInt(SetOk.size());
-            cl = Clusters.get(index);
+            cl = castle.clusters.get(index);
         }
         return cl;
     }//Best selection
@@ -233,11 +208,11 @@ public class OCASTLE {
 
         int size = C.getSize();
 
-        if( size >= Kanon ){
+        if( size >= castle.k ){
             OutputCluster(C);
         } else {
             ArrayList<Cluster> KC_set = new ArrayList<Cluster>();
-            for( Cluster Cl : KClusters ){
+            for( Cluster Cl : castle.kclusters ){
                 if( Cl.isCovers(T) ) KC_set.add(Cl);
             }
 
@@ -256,12 +231,12 @@ public class OCASTLE {
             else {
                 int m = 0;
                 int totalsize = 0;// size of the buffer (Summa(nonKS.size))
-                for( Cluster Cl : Clusters ){
+                for( Cluster Cl : castle.clusters ){
                     if( C.getSize() < Cl.getSize() ) m++;
                     size += Cl.getSize();
                 }
 
-                if( m > Clusters.size() / 2 || totalsize < Kanon ){
+                if( m > castle.clusters.size() / 2 || totalsize < castle.k ){
                     Cluster sup = getSuppressCluster();
                     if(T.receivedOrder == 0) {
                         AnonymizationOutput Anony = new AnonymizationOutput(T, sup);
@@ -272,7 +247,7 @@ public class OCASTLE {
                 }//supress and anonymize;
                 else {
                     MergeClusters();
-                    OutputCluster(Clusters.firstElement());
+                    OutputCluster(castle.clusters.firstElement());
                 }
             }
 
@@ -288,7 +263,7 @@ public class OCASTLE {
     public Cluster FindClusterOfTuple(Tuple T){
         Cluster cl = null;
         int order = T.receivedOrder;
-        for( Cluster Cluster : Clusters ){
+        for( Cluster Cluster : castle.clusters ){
             if( Cluster.isContains(order) ) return Cluster;
         }
         return cl;
@@ -302,7 +277,7 @@ public class OCASTLE {
     public void OutputCluster(Cluster C){
 
         ArrayList<Cluster> SC = new ArrayList<Cluster>();
-        if( C.getSize() >= 2 * Kanon ){
+        if( C.getSize() >= 2 * castle.k ){
             SC = Split(C);
         } else SC.add(C);
 
@@ -316,8 +291,8 @@ public class OCASTLE {
                     T.receivedOrder = 1; //输出过的元组标记为1
                 }
             }
-            KClusters.add(Cj);
-            Clusters.remove(Cj);
+            castle.kclusters.add(Cj);
+            castle.clusters.remove(Cj);
         }
     }
 
@@ -353,7 +328,7 @@ public class OCASTLE {
         Random rd=new Random();
         int index;
 
-        while(BS.size()>=Kanon){
+        while(BS.size()>=castle.k){
             index=rd.nextInt(BS.size());
             Bucket B=BS.get(index);// select random bucket
             Tuple Tk;//Tk- find KNN of Tk
@@ -423,17 +398,17 @@ public class OCASTLE {
      * Merge remaining cluster into single cluster
      */
     private void MergeClusters(){
-        Cluster MC = Clusters.get(0);
+        Cluster MC = castle.clusters.get(0);
         Cluster TC = null;
-        Clusters.remove(0);
-        while( !Clusters.isEmpty() ){
-            TC = Clusters.firstElement();
+        castle.clusters.remove(0);
+        while( !castle.clusters.isEmpty() ){
+            TC = castle.clusters.firstElement();
             for( Tuple t : TC.tuples ){
                 MC.addTuple(t);
             }
-            Clusters.remove(0);
+            castle.clusters.remove(0);
         }
-        Clusters.add(MC);
+        castle.clusters.add(MC);
     }
 
 
