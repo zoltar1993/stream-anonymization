@@ -67,7 +67,7 @@
                             <mainClass>top.wxx.bs.CastleRunner</mainClass>
                         </manifest>
                         <manifestEntries>
-                            <program-class>top.wxx.bs.SocketWindowWordCount</program-class>
+                            <program-class>top.wxx.bs.algorithm.castle.original.FlinkCastle</program-class>
                         </manifestEntries>
                     </archive>
                     <descriptorRefs>
