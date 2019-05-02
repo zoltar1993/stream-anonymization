@@ -2,6 +2,7 @@ package top.wxx.bs.algorithm.castle.original;
 
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by xiangxin.wang on 2019/5/2.
@@ -15,7 +16,7 @@ public class CastleFunc {
      * @param T Tuple
      * @return Best cluster for Tuple or NULL
      */
-    private Cluster selectBestCluster(Tuple T, Castle castle){
+    static public Cluster selectBestCluster(Tuple T, Castle castle){
         int currentsize = castle.clusters.size();
         EnlargeCost[] E = new EnlargeCost[currentsize];
 
@@ -53,6 +54,220 @@ public class CastleFunc {
             cl = castle.clusters.get(index);
         }
         return cl;
+    }
+
+
+
+    /**
+     * Output expiring tuple
+     *
+     * @param t Tuple
+     */
+    static public void delayConstraint(Tuple t, Castle castle, BlockingQueue<AnonymizationOutput> outputBuffer){
+        Cluster C = FindClusterOfTuple(t, castle);
+
+        if(C==null) return;
+
+        int size = C.getSize();
+
+        if( size >= castle.k ){
+            outputCluster(C, castle, outputBuffer);
+        } else {
+            ArrayList<Cluster> KC_set = new ArrayList<Cluster>();
+            for( Cluster Cl : castle.kclusters ){
+                if( Cl.isCovers(t) ) KC_set.add(Cl);
+            }
+
+            if( !KC_set.isEmpty() ){
+                Random rd = new Random();
+                int index = rd.nextInt(KC_set.size());
+                Cluster Cl = KC_set.get(index);
+                if(t.receivedOrder == 0) {
+                    AnonymizationOutput Anony = new AnonymizationOutput(t, Cl);
+                    outputBuffer.offer(Anony);
+                    t.receivedOrder = 1; //输出过的元组标记为1
+                }
+                C.tuples.remove(t);// After anonymizing should remove tuple from cluster
+                return;
+            }//Anonymize with existing Ks cluster
+            else {
+                int m = 0;
+                int totalsize = 0;// size of the buffer (Summa(nonKS.size))
+                for( Cluster Cl : castle.clusters ){
+                    if( C.getSize() < Cl.getSize() ) m++;
+                    size += Cl.getSize();
+                }
+
+                if( m > castle.clusters.size() / 2 || totalsize < castle.k ){
+                    Cluster sup = getSuppressCluster();
+                    if(t.receivedOrder == 0) {
+                        AnonymizationOutput Anony = new AnonymizationOutput(t, sup);
+                        outputBuffer.offer(Anony);
+                        t.receivedOrder = 1; //输出过的元组标记为1
+                    }
+                    C.tuples.remove(t);// After anonymizing should remove tuple from cluster
+                }//supress and anonymize;
+                else {
+                    mergeClusters(castle);
+                    outputCluster(castle.clusters.firstElement(), castle, outputBuffer);
+                }
+            }
+
+        }
+    }
+
+    /**
+     * Find cluster of tuple T
+     *
+     * @param t Tuple
+     * @return Cluster which contains T;
+     */
+    static private Cluster FindClusterOfTuple(Tuple t, Castle castle){
+        Cluster cl = null;
+        int order = t.receivedOrder;
+        for( Cluster Cluster : castle.clusters ){
+            if( Cluster.isContains(order) ) return Cluster;
+        }
+        return cl;
+    }
+
+    /**
+     * Output Cluster C
+     *
+     * @param C Cluster
+     */
+    static private void outputCluster(Cluster C, Castle castle, BlockingQueue<AnonymizationOutput> outputBuffer){
+        ArrayList<Cluster> SC = new ArrayList<Cluster>();
+        if( C.getSize() >= 2 * castle.k ){
+            SC = Split(C, castle);
+        } else SC.add(C);
+
+        AnonymizationOutput anony = null;
+
+        for( Cluster Cj : SC ){
+            for( Tuple T : Cj.tuples ){
+                if(T.receivedOrder == 0) {
+                    anony = new AnonymizationOutput(T, Cj);
+                    outputBuffer.offer(anony);
+                    T.receivedOrder = 1; //输出过的元组标记为1
+                }
+            }
+            castle.kclusters.add(Cj);
+            castle.clusters.remove(Cj);
+        }
+    }
+
+    /**
+     * Split big clusters into several clusters
+     * @param C Cluster
+     * @return cluster set
+     */
+    static private ArrayList<Cluster> Split(Cluster C, Castle castle) {
+        ArrayList<Cluster> AC=new ArrayList<Cluster>();
+        ArrayList<Bucket> BS=new ArrayList<Bucket>();
+        ArrayList<Tuple> TS=C.tuples;//tuples of C
+        Tuple t=TS.get(0);
+        Bucket b=new Bucket(t);
+        BS.add(b);
+        // assign buckets
+        for(int i=1;i<TS.size();i++){
+            int assigned=0;
+            Tuple td=TS.get(i);
+            for(Bucket B: BS){
+                if(B.canInclude(td)){
+                    B.addTuple(td);
+                    assigned=1;
+                }
+            }
+            if(assigned==0){
+                b=new Bucket(td);
+                BS.add(b);
+            }
+        }// finished grouping tuples by pid into Buckets BS
+
+
+        Random rd=new Random();
+        int index;
+
+        while(BS.size()>=castle.k){
+            index=rd.nextInt(BS.size());
+            Bucket B=BS.get(index);// select random bucket
+            Tuple Tk;//Tk- find KNN of Tk
+            if(B.getSize()==1){
+                Tk=B.tuples.get(0);
+                BS.remove(B);
+            }
+            else {
+                Tk=B.tuples.get(rd.nextInt(B.getSize()));
+                B.removeTuple(Tk);
+            }
+
+            Cluster subC = new Cluster(Tk);
+            subC.createdTime = -1; //此处。。。！！！
+            if(B == null)
+                BS.remove(B);
+
+            for(int o = 0;o<B.getSize();o++) {
+                Tuple Tb = B.tuples.get(o);
+                subC.addTuple(Tb);
+                B.tuples.remove(o);
+
+                if(B == null)
+                    BS.remove(B);
+            }
+
+            AC.add(subC);
+            BS.remove(B);
+        }
+        double mine=Double.MAX_VALUE;
+        EnlargeCost[] E=new EnlargeCost[AC.size()];
+        for(int d=0;d<BS.size();d++) {
+            Bucket Bi = BS.get(d);
+            Tuple Ti=Bi.tuples.get(rd.nextInt(Bi.getSize()));
+            for(int i=0;i<AC.size();i++) {
+                double e=AC.get(i).ILAfterAddTuple(Ti);
+                E[i]=new EnlargeCost(i,e);
+                if(e<mine)mine=e;
+            }
+
+            for(int i=0;i<AC.size();i++) {
+
+                if(E[i].cost==mine) {
+                    for(int j= 0 ;j<Bi.getSize();j++) {
+                        AC.get(E[i].index).addTuple(Bi.tuples.get(j));
+                    }
+                }
+            }
+
+            BS.remove(Bi);
+        }
+        return AC;
+    }
+
+    /**
+     * @return return suppressed cluster
+     */
+    static private Cluster getSuppressCluster(){
+        Cluster SupCl = new Cluster();
+        SupCl.SuppressCluster();
+        return SupCl;
+    }
+
+    /**
+     * Merge remaining cluster into single cluster
+     */
+    static private void mergeClusters(Castle castle){
+        Cluster MC = castle.clusters.get(0);
+        Cluster TC = null;
+        castle.clusters.remove(0);
+        while( !castle.clusters.isEmpty() ){
+            TC = castle.clusters.firstElement();
+            for( Tuple t : TC.tuples ){
+                MC.addTuple(t);
+            }
+            castle.clusters.remove(0);
+        }
+        castle.clusters.add(MC);
     }
 
 }
