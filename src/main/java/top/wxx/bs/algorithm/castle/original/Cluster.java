@@ -28,7 +28,7 @@ public class Cluster {
     //Tuples in cluster
     ArrayList<Tuple> tuples;
     //Adult tree
-    static AdultRange Ranges;
+    final static AdultRange Ranges;
 
     static {
         Ranges = new AdultRange();
@@ -37,9 +37,6 @@ public class Cluster {
         Ranges.fhlweightRange = new Range(1490400,13492);
         Ranges.hours_weekRange = new Range(99,1);
     }
-
-    Cluster(){}
-
 
     Cluster(Tuple T) {
         //this.createdTime = clusterId++;
@@ -60,15 +57,15 @@ public class Cluster {
 
     public void addTuple(Tuple T){
         if(isCovers(T)==false){
-        this.ageRange.enlargeRange(T.age);
-        this.fhlweightRange.enlargeRange(T.fhlweight);
-        this.edu_numRange.enlargeRange(T.education_num);
-        this.hours_weekRange.enlargeRange(T.hour_per_week);
-        this.work_class=AdultTree.WorkClass.getLCA(this.work_class,T.work_class);
-        this.education=AdultTree.Education.getLCA(this.education,T.education);
-        this.marital_status=AdultTree.MaritalStatus.getLCA(this.marital_status,T.marital_status);
-        this.race=AdultTree.Race.getLCA(this.race,T.race);
-        this.gender=AdultTree.Gender.getLCA(this.gender,T.gender);
+            this.ageRange.enlargeRange(T.age);
+            this.fhlweightRange.enlargeRange(T.fhlweight);
+            this.edu_numRange.enlargeRange(T.education_num);
+            this.hours_weekRange.enlargeRange(T.hour_per_week);
+            this.work_class=AdultTree.WorkClass.getLCA(this.work_class,T.work_class);
+            this.education=AdultTree.Education.getLCA(this.education,T.education);
+            this.marital_status=AdultTree.MaritalStatus.getLCA(this.marital_status,T.marital_status);
+            this.race=AdultTree.Race.getLCA(this.race,T.race);
+            this.gender=AdultTree.Gender.getLCA(this.gender,T.gender);
         }
         tuples.add(T);
     }
@@ -76,8 +73,7 @@ public class Cluster {
     //Enlargement
     /**
      * The enlargement function defined here.
-     * @param C -Cluster
-     * @param T -Tuple 
+     * @param T -Tuple
      * @return 
      */
     double Enlargement(Tuple T){
@@ -216,19 +212,22 @@ public class Cluster {
                                               marital_status+", "+race+","+ gender+"]";
     } 
 
-    public void SuppressCluster(){
-        this.createdTime=-1;
-        this.ageRange=Ranges.ageRange;
-        this.fhlweightRange=Ranges.fhlweightRange;
-        this.edu_numRange=Ranges.edu_numRange;
-        this.hours_weekRange=Ranges.hours_weekRange;
+    static public Cluster getSuppressCluster(){
+        Cluster c = new Cluster(new Tuple());
+
+        c.createdTime=-1;
+        c.ageRange=Ranges.ageRange;
+        c.fhlweightRange=Ranges.fhlweightRange;
+        c.edu_numRange=Ranges.edu_numRange;
+        c.hours_weekRange=Ranges.hours_weekRange;
         
-        this.work_class = AdultTree.WorkClass.getRootName();
-        this.education = AdultTree.Education.getRootName();
-        this.marital_status = AdultTree.MaritalStatus.getRootName();
-        this.race = AdultTree.Race.getRootName();
-        this.gender = AdultTree.Gender.getRootName();
-        tuples=null;
-        Ranges=null;
+        c.work_class = AdultTree.WorkClass.getRootName();
+        c.education = AdultTree.Education.getRootName();
+        c.marital_status = AdultTree.MaritalStatus.getRootName();
+        c.race = AdultTree.Race.getRootName();
+        c.gender = AdultTree.Gender.getRootName();
+        c.tuples=null;
+
+        return c;
     }
 }

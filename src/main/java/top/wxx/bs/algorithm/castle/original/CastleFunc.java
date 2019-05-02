@@ -1,8 +1,11 @@
 package top.wxx.bs.algorithm.castle.original;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
+import java.util.stream.Collectors;
 
 /**
  * Created by xiangxin.wang on 2019/5/2.
@@ -56,8 +59,6 @@ public class CastleFunc {
         return cl;
     }
 
-
-
     /**
      * Output expiring tuple
      *
@@ -99,7 +100,7 @@ public class CastleFunc {
                 }
 
                 if( m > castle.clusters.size() / 2 || totalsize < castle.k ){
-                    Cluster sup = getSuppressCluster();
+                    Cluster sup = Cluster.getSuppressCluster();
                     if(t.receivedOrder == 0) {
                         AnonymizationOutput Anony = new AnonymizationOutput(t, sup);
                         outputBuffer.offer(Anony);
@@ -108,13 +109,14 @@ public class CastleFunc {
                     C.tuples.remove(t);// After anonymizing should remove tuple from cluster
                 }//supress and anonymize;
                 else {
-                    mergeClusters(castle);
+                    mergeClusters(castle.clusters);
                     outputCluster(castle.clusters.firstElement(), castle, outputBuffer);
                 }
             }
 
         }
     }
+
 
     /**
      * Find cluster of tuple T
@@ -245,29 +247,21 @@ public class CastleFunc {
     }
 
     /**
-     * @return return suppressed cluster
-     */
-    static private Cluster getSuppressCluster(){
-        Cluster SupCl = new Cluster();
-        SupCl.SuppressCluster();
-        return SupCl;
-    }
-
-    /**
      * Merge remaining cluster into single cluster
      */
-    static private void mergeClusters(Castle castle){
-        Cluster MC = castle.clusters.get(0);
-        Cluster TC = null;
-        castle.clusters.remove(0);
-        while( !castle.clusters.isEmpty() ){
-            TC = castle.clusters.firstElement();
-            for( Tuple t : TC.tuples ){
-                MC.addTuple(t);
-            }
-            castle.clusters.remove(0);
+    static private void mergeClusters(Vector<Cluster> clusters){
+        List<Tuple> tuples = clusters.stream()
+                .flatMap(c -> c.tuples.stream())
+                .collect(Collectors.toList());
+        Cluster mc = new Cluster(tuples.get(0));
+
+        for(int i=1 ; i<tuples.size() ; i++){
+            mc.addTuple( tuples.get(i) );
         }
-        castle.clusters.add(MC);
+
+        clusters.removeAllElements();
+
+        clusters.add(mc);
     }
 
 }

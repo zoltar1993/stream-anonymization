@@ -265,7 +265,7 @@ public class FlinkCastle {
                 }
 
                 if( m > Clusters.size() / 2 || totalsize < Kanon ){
-                    Cluster sup = getSuppressCluster();
+                    Cluster sup = Cluster.getSuppressCluster();
                     if(T.receivedOrder == 0) {
                         AnonymizationOutput Anony = new AnonymizationOutput(T, sup);
                         outputBuffer.offer(Anony);
@@ -411,16 +411,6 @@ public class FlinkCastle {
         return AC;
     }
 
-
-
-    /**
-     * @return return suppressed cluster
-     */
-    public Cluster getSuppressCluster(){
-        Cluster SupCl = new Cluster();
-        SupCl.SuppressCluster();
-        return SupCl;
-    }
 
     /**
      * Merge remaining cluster into single cluster
