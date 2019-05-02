@@ -1,15 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package top.wxx.bs.TreeStructure;
 
 import java.util.*;
-/**
- *
- * @author Ankhbayar
- */
+
 public class DepthFirstTreeIterator implements Iterator<Node> {
     private LinkedList<Node> list;
 

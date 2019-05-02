@@ -7,9 +7,6 @@ import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
-/**
- * @author 77781225
- */
 public class OCASTLE {
     final private static Logger logger = LoggerFactory.getLogger(OCASTLE.class);
 

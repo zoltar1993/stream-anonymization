@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package top.wxx.bs.TreeStructure;
 
 import org.slf4j.Logger;
@@ -13,9 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-/**
- * @author Ankhbayar
- */
 public class Tree {
     final private static Logger logger = LoggerFactory.getLogger(Tree.class);
 
