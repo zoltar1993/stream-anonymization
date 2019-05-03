@@ -86,7 +86,10 @@ public class OCASTLE {
                     castle.readedBuffer.offer(t);
 
                     if( castle.readedBuffer.size() > castle.d ){
-                        CastleFunc.delayConstraint(take(castle.readedBuffer), castle, outputBuffer);
+                        List<AnonymizationOutput> output = CastleFunc.delayConstraint(take(castle.readedBuffer), castle);
+                        for(AnonymizationOutput ano : output){
+                            outputBuffer.offer(ano);
+                        }
                     }
                 }
             }

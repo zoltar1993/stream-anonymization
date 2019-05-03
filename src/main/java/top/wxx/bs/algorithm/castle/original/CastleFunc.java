@@ -1,9 +1,6 @@
 package top.wxx.bs.algorithm.castle.original;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
@@ -64,15 +61,17 @@ public class CastleFunc {
      *
      * @param t Tuple
      */
-    static public void delayConstraint(Tuple t, Castle castle, BlockingQueue<AnonymizationOutput> outputBuffer){
+    static public List<AnonymizationOutput> delayConstraint(Tuple t, Castle castle){
+        List<AnonymizationOutput> output = new LinkedList<>();
+
         Cluster C = findClusterOfTuple(t, castle.clusters);
 
-        if(C==null) return;
+        if(C==null) return output;
 
         int size = C.getSize();
 
         if( size >= castle.k ){
-            outputCluster(C, castle, outputBuffer);
+            outputCluster(C, castle, output);
         } else {
             ArrayList<Cluster> KC_set = new ArrayList<Cluster>();
             for( Cluster Cl : castle.kclusters ){
@@ -85,11 +84,11 @@ public class CastleFunc {
                 Cluster Cl = KC_set.get(index);
                 if(t.receivedOrder == 0) {
                     AnonymizationOutput Anony = new AnonymizationOutput(t, Cl);
-                    outputBuffer.offer(Anony);
+                    output.add(Anony);
                     t.receivedOrder = 1; //输出过的元组标记为1
                 }
                 C.tuples.remove(t);// After anonymizing should remove tuple from cluster
-                return;
+                return output;
             }//Anonymize with existing Ks cluster
             else {
                 int m = 0;
@@ -103,18 +102,20 @@ public class CastleFunc {
                     Cluster sup = Cluster.getSuppressCluster();
                     if(t.receivedOrder == 0) {
                         AnonymizationOutput Anony = new AnonymizationOutput(t, sup);
-                        outputBuffer.offer(Anony);
+                        output.add(Anony);
                         t.receivedOrder = 1; //输出过的元组标记为1
                     }
                     C.tuples.remove(t);// After anonymizing should remove tuple from cluster
                 }//supress and anonymize;
                 else {
                     mergeClusters(castle.clusters);
-                    outputCluster(castle.clusters.firstElement(), castle, outputBuffer);
+                    outputCluster(castle.clusters.firstElement(), castle, output);
                 }
             }
 
         }
+
+        return output;
     }
 
 
@@ -136,7 +137,7 @@ public class CastleFunc {
      *
      * @param C Cluster
      */
-    static private void outputCluster(Cluster C, Castle castle, BlockingQueue<AnonymizationOutput> outputBuffer){
+    static private void outputCluster(Cluster C, Castle castle, List<AnonymizationOutput> output){
         ArrayList<Cluster> SC = new ArrayList<Cluster>();
         if( C.getSize() >= 2 * castle.k ){
             SC = Split(C, castle.k);
@@ -148,7 +149,7 @@ public class CastleFunc {
         for( Cluster Cj : SC ){
             for( Tuple T : Cj.tuples ){
                 if(T.receivedOrder == 0) {
-                    outputBuffer.offer( new AnonymizationOutput(T, Cj) );
+                    output.add( new AnonymizationOutput(T, Cj) );
                     T.receivedOrder = 1; //输出过的元组标记为1
                 }
             }
