@@ -1,5 +1,6 @@
 package top.wxx.bs;
 
+import org.apache.flink.api.java.utils.ParameterTool;
 import top.wxx.bs.algorithm.castle.original.FileDataAccessor;
 import top.wxx.bs.algorithm.castle.original.OCASTLE;
 
@@ -10,14 +11,15 @@ import top.wxx.bs.algorithm.castle.original.OCASTLE;
 public class CastleRunner {
 
     public static void main(String... args){
-        int K = 4;
-        int D = 10;
-        int B = 6;
-        double T = 0.5;
+        final ParameterTool params = ParameterTool.fromArgs(args);
 
-        int n = 40;
+        final int k = params.getInt("k");                          // anonymity degree
+        final int d = params.getInt("d");                          // allowed time for tuple
+        final int b = params.getInt("b");                          // limit of Cluster.size()
+        final double tau = params.has("tau") ? params.getDouble("tau") : 0.6;
+        final int n = params.has("n") ? params.getInt("n") : 15318;
 
-        OCASTLE ocastle = new OCASTLE(K, D, B, T);
+        OCASTLE ocastle = new OCASTLE(k, d, b, tau);
 
         ocastle.setDataAccessor( new FileDataAccessor(n) );
 
