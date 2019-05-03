@@ -162,12 +162,13 @@ public class Cluster {
     
     /**
      * Check tuple assigned to this cluster
-     * @param order received order of tuple
+     * @param pid pid of tuple
      * @return True if Cluster contains Tuple T
      */
-    boolean isContains(int order){
-        for(int i=0;i<tuples.size();i++){
-            if(tuples.get(i).receivedOrder==order)return true;
+    boolean isContains(int pid){
+        for(Tuple t : tuples){
+            if( t.pid == pid )
+                return true;
         }
         return false;
     }

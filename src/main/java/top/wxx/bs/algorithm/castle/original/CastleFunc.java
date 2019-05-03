@@ -65,7 +65,7 @@ public class CastleFunc {
      * @param t Tuple
      */
     static public void delayConstraint(Tuple t, Castle castle, BlockingQueue<AnonymizationOutput> outputBuffer){
-        Cluster C = findClusterOfTuple(t, castle);
+        Cluster C = findClusterOfTuple(t, castle.clusters);
 
         if(C==null) return;
 
@@ -124,13 +124,11 @@ public class CastleFunc {
      * @param t Tuple
      * @return Cluster which contains T;
      */
-    static private Cluster findClusterOfTuple(Tuple t, Castle castle){
-        Cluster cl = null;
-        int order = t.receivedOrder;
-        for( Cluster Cluster : castle.clusters ){
-            if( Cluster.isContains(order) ) return Cluster;
+    static private Cluster findClusterOfTuple(Tuple t, Vector<Cluster> clusters){
+        for(Cluster c : clusters){
+            if( c.isContains(t.pid) ) return c;
         }
-        return cl;
+        return null;
     }
 
     /**
@@ -142,15 +140,15 @@ public class CastleFunc {
         ArrayList<Cluster> SC = new ArrayList<Cluster>();
         if( C.getSize() >= 2 * castle.k ){
             SC = Split(C, castle.k);
-        } else SC.add(C);
+        } else {
+            SC.add(C);
+        }
 
-        AnonymizationOutput anony = null;
 
         for( Cluster Cj : SC ){
             for( Tuple T : Cj.tuples ){
                 if(T.receivedOrder == 0) {
-                    anony = new AnonymizationOutput(T, Cj);
-                    outputBuffer.offer(anony);
+                    outputBuffer.offer( new AnonymizationOutput(T, Cj) );
                     T.receivedOrder = 1; //输出过的元组标记为1
                 }
             }
