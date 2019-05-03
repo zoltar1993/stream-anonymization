@@ -1,0 +1,73 @@
+<html>
+<head>
+   <meta charset="UTF-8" />
+   <title>Highcharts 教程 | 菜鸟教程(runoob.com)</title>
+   <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+   <script src="https://code.highcharts.com/highcharts.js"></script>
+</head>
+<body>
+<div id="container" style="width: 550px; height: 400px; margin: 0 auto"></div>
+<script language="JavaScript">
+$(document).ready(function() {
+   var title = {
+      text: '运行时间 - b'
+   };
+   var subtitle = {
+      text: 'k=10 d=100 n=1000 p=3'
+   };
+   var xAxis = {
+      title: {
+          text: 'k'
+      },
+      categories: ['20', '30', '40', '50']
+   };
+   var yAxis = {
+     min: 0,
+      title: {
+         text: '运行时间 / s'
+      },
+      plotLines: [{
+         value: 0,
+         width: 1,
+         color: '#808080'
+      }]
+   };   
+
+   var tooltip = {
+      valueSuffix: '\xB0C'
+   }
+
+   var legend = {
+      layout: 'vertical',
+      align: 'right',
+      verticalAlign: 'middle',
+      borderWidth: 0
+   };
+
+   var series =  [
+      {
+         name: '集中式Castle',
+         data: [5.619, 5.622, 5.598, 5.673]
+      },
+      {
+         name: '分布式Castle',
+         data: [5.619/2.4, 5.622/2.5, 5.598/2.53, 5.673/2.23]
+      }
+   ];
+
+   var json = {};
+
+   json.title = title;
+   json.subtitle = subtitle;
+   json.xAxis = xAxis;
+   json.yAxis = yAxis;
+   json.tooltip = tooltip;
+   json.legend = legend;
+   json.series = series;
+
+   $('#container').highcharts(json);
+});
+</script>
+</body>
+</html>
+

@@ -1,0 +1,72 @@
+<html>
+<head>
+   <meta charset="UTF-8" />
+   <title>Highcharts 教程 | 菜鸟教程(runoob.com)</title>
+   <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+   <script src="https://code.highcharts.com/highcharts.js"></script>
+</head>
+<body>
+<div id="container" style="width: 550px; height: 400px; margin: 0 auto"></div>
+<script language="JavaScript">
+$(document).ready(function() {
+   var title = {
+      text: '平均信息损失 - d'
+   };
+   var subtitle = {
+      text: 'k=10 b=20 n=1000 p=3'
+   };
+   var xAxis = {
+      title: {
+          text: 'd'
+      },
+      categories: ['50', '100', '150', '200', '250', '300']
+   };
+   var yAxis = {
+      title: {
+         text: '平均信息损失'
+      },
+      plotLines: [{
+         value: 0,
+         width: 1,
+         color: '#808080'
+      }]
+   };   
+
+   var tooltip = {
+      valueSuffix: '\xB0C'
+   }
+
+   var legend = {
+      layout: 'vertical',
+      align: 'right',
+      verticalAlign: 'middle',
+      borderWidth: 0
+   };
+
+   var series =  [
+      {
+         name: '集中式Castle',
+         data: [0.314088, 0.307513, 0.300232, 0.298290, 0.292349, 0.289234]
+      },
+      {
+         name: '分布式Castle',
+         data: [0.322301, 0.309293, 0.301322, 0.292389, 0.291102, 0.289902]
+      }
+   ];
+
+   var json = {};
+
+   json.title = title;
+   json.subtitle = subtitle;
+   json.xAxis = xAxis;
+   json.yAxis = yAxis;
+   json.tooltip = tooltip;
+   json.legend = legend;
+   json.series = series;
+
+   $('#container').highcharts(json);
+});
+</script>
+</body>
+</html>
+
