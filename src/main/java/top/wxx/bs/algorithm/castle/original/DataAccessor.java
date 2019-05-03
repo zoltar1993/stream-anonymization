@@ -3,7 +3,7 @@ package top.wxx.bs.algorithm.castle.original;
 import java.util.List;
 
 /**
- * Created by zoltar on 2019/4/5.
+ * Created by xiangxin.wang on 2019/4/5.
  */
 
 public interface DataAccessor {

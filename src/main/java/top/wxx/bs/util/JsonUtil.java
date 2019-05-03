@@ -15,7 +15,7 @@ import com.google.common.base.Throwables;
 import java.io.IOException;
 
 /**
- * Created by zoltar on 2019/3/15.
+ * Created by xiangxin.wang on 2019/3/15.
  */
 
 public class JsonUtil {

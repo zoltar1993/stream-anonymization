@@ -4,7 +4,7 @@ import top.wxx.bs.algorithm.castle.original.FileDataAccessor;
 import top.wxx.bs.algorithm.castle.original.OCASTLE;
 
 /**
- * Created by zoltar on 2019/4/6.
+ * Created by xiangxin.wang on 2019/4/6.
  */
 
 public class CastleRunner {

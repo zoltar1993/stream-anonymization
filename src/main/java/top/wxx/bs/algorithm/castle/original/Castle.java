@@ -6,7 +6,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
- * Created by zoltar on 2019/5/2.
+ * Created by xiangxin.wang on 2019/5/2.
  */
 
 public class Castle implements Serializable {
