@@ -5,6 +5,7 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
+import top.wxx.bs.util.JsonUtil;
 
 import java.util.List;
 
@@ -52,25 +53,25 @@ public class FlinkCastle {
                     }
 
                     castle.readedBuffer.offer(t);
+                    t.castle = castle;
                     return castle.readedBuffer.size() > d;
                 })
-                .flatMap(new DataPublisher(castle));
+                .flatMap(new DataPublisher());
 //                .map(t -> new AnonymizationOutput(t, new Cluster(t)) );
 
         output.print().setParallelism(1);
+//        tuples.print().setParallelism(1);
 
         env.execute("Flink Castle Anonymization");
     }
 
 
     public static class DataPublisher implements FlatMapFunction<Tuple, AnonymizationOutput> {
-        private Castle castle;
-
-        public DataPublisher(Castle castle){ this.castle = castle; }
 
         @Override
         public void flatMap(Tuple t, Collector<AnonymizationOutput> out) throws Exception {
-            System.out.println("flat Map , now tuple : " + t);
+            Castle castle = t.castle;
+            System.out.println("flat Map , now tuple : " + JsonUtil.toJsonStr(t));
             System.out.println("readedBuffer site : " + castle.readedBuffer.size());
             Tuple preT = castle.readedBuffer.take();
             System.out.println("pass get preT ");

@@ -12,7 +12,9 @@ public class Tuple {
     String marital_status;
     String race;
     String gender;
-    
+
+    Castle castle;
+
     public Tuple(){
     
     }
