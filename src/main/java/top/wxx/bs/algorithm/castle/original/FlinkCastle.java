@@ -55,6 +55,7 @@ public class FlinkCastle {
                     return castle.readedBuffer.size() > d;
                 })
                 .flatMap(new DataPublisher(castle));
+//                .map(t -> new AnonymizationOutput(t, new Cluster(t)) );
 
         output.print().setParallelism(1);
 
@@ -69,7 +70,10 @@ public class FlinkCastle {
 
         @Override
         public void flatMap(Tuple t, Collector<AnonymizationOutput> out) throws Exception {
+            System.out.println("flat Map , now tuple : " + t);
+            System.out.println("readedBuffer site : " + castle.readedBuffer.size());
             Tuple preT = castle.readedBuffer.take();
+            System.out.println("pass get preT ");
             List<AnonymizationOutput> oList = CastleFunc.delayConstraint(preT, castle);
             for(AnonymizationOutput o : oList) out.collect(o);
         }
