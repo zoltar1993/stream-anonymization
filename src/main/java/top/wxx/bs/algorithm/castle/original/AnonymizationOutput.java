@@ -17,7 +17,7 @@ public class AnonymizationOutput {
         final StringBuffer sb = new StringBuffer("AnonymizationOutput{");
         sb.append("tuple=").append(tuple);
         sb.append(", cluster=").append(cluster);
-        sb.append(", infoLoss=").append(infoLoss);
+        sb.append(", infoLoss=").append(infoLoss/2);
         sb.append('}');
         return sb.toString();
     }
