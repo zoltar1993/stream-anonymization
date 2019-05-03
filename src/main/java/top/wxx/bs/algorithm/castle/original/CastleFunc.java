@@ -1,7 +1,6 @@
 package top.wxx.bs.algorithm.castle.original;
 
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
 /**
