@@ -1,8 +1,10 @@
 package top.wxx.bs.algorithm.castle.original;
 
+import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.util.Collector;
 
 import java.util.List;
 
@@ -40,7 +42,6 @@ public class FlinkCastle {
         final Integer clusterId = 0;
         DataStream<AnonymizationOutput> output = tuples
                 .filter(t -> {
-
                     Cluster c = CastleFunc.selectBestCluster(t, castle);
                     if( c == null ){
                         c = new Cluster(t);
@@ -53,15 +54,24 @@ public class FlinkCastle {
                     castle.readedBuffer.offer(t);
                     return castle.readedBuffer.size() > d;
                 })
-                .flatMap((t,out) -> {
-                    Tuple preT = castle.readedBuffer.take();
-                    List<AnonymizationOutput> oList = CastleFunc.delayConstraint(preT, castle);
-                    for(AnonymizationOutput o : oList) out.collect(o);
-                });
+                .flatMap(new DataPublisher(castle));
 
         output.print().setParallelism(1);
 
         env.execute("Flink Castle Anonymization");
     }
 
+
+    public static class DataPublisher implements FlatMapFunction<Tuple, AnonymizationOutput> {
+        private Castle castle;
+
+        public DataPublisher(Castle castle){ this.castle = castle; }
+
+        @Override
+        public void flatMap(Tuple t, Collector<AnonymizationOutput> out) throws Exception {
+            Tuple preT = castle.readedBuffer.take();
+            List<AnonymizationOutput> oList = CastleFunc.delayConstraint(preT, castle);
+            for(AnonymizationOutput o : oList) out.collect(o);
+        }
+    }
 }

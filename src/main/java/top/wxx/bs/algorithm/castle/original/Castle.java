@@ -1,5 +1,6 @@
 package top.wxx.bs.algorithm.castle.original;
 
+import java.io.Serializable;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -8,7 +9,7 @@ import java.util.concurrent.LinkedBlockingDeque;
  * Created by zoltar on 2019/5/2.
  */
 
-public class Castle {
+public class Castle implements Serializable {
     public int k;                          // anonymity degree
     public int d;                          // allowed time for tuple
     public int b;                          // limit of Cluster.size()
